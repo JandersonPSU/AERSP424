@@ -7,7 +7,14 @@ using namespace std;
 double ffunc(double t,double &p,double &q, double &r);
 void derivative_function(vector<double> x, vector<vector<double>> dcm, vector<double> v_body, double time,vector<double> &xdot,double &Cdot);
 double dotProduct(vector<vector<double>> a, vector<vector<double>> b);
-  
+vector<double> addVectors(vector<double> a, vector<double> b);
+vector<double> scaleVector(vector<double> vec, double scalar);
+vector<vector<double>> scaleMatrix(vector<vector<double>> vec, double scalar);
+vector<vector<double>> addMatrix(vector<vector<double>> a, vector<vector<double>> b);
+vector<double> add4Vectors( vector<double> a, vector<double> b, vector<double> c, vector<double> d);
+vector<vector<double>> add4Matrix(vector<vector<double>> a, vector<vector<double>> b, vector<vector<double>> c, vector<vector<double>> d);
+ 
+
 
 int main()
 {
@@ -17,7 +24,7 @@ int main()
     vector<double> V_body = {60.0 * 6076.0 / 3600.0, 0.0, 0.0}; // Convert knots to ft/sec
     vector<vector<double>> x; // 2D vector to store state over time
     x.push_back({x0[0], x0[1], x0[2], V_body[0], V_body[1], V_body[2], 0.0, 0.0, 0.0});
-    vector<double> xd; //derivatives vector
+    vector<vector<double>> xd={}; //derivatives vector
     vector<double> t = {0.0}; //time vector
     double tmax = 60.0; // Simulation time limit (60 seconds)
     int func_calls = 0; // To track function calls
@@ -69,16 +76,33 @@ int main()
     vector<vector<double>> Cdot3;
     vector<double> xdot4;
     vector<vector<double>> Cdot4;
+
+    vector<double> xdot;
+    vector<vector<double>> Cdot;
+
     for (int index=0;index<(int)(tmax/dt);index++){
         current_time= index*dt;
         vector<double> xn= x[index];
-
+    
+        //Getting Rk4 Steps
         derivative_function(xn,DCM,V_body,current_time,xdot1,Cdot1);
-        derivative_function(,xdot2,Cdot2);
-        derivative_function(,xdot3,Cdot3);
-        derivative_function(,xdot4,Cdot4);
+        derivative_function(addVectors(xn,scaleVector(xdot2,dt/2)),addMatrix(DCM,scaleMatrix(Cdot2,dt/2)),V_body ,current_time+dt/2,xdot2,Cdot2);
+        derivative_function(addVectors(xn,scaleVector(xdot2,dt/2)),addMatrix(DCM,scaleMatrix(Cdot2,dt/2)),V_body ,current_time+dt/2,xdot3,Cdot3);
+        derivative_function(addVectors(xn,scaleVector(xdot3,dt)),addMatrix(DCM,scaleMatrix(Cdot3,dt)),V_body ,current_time+dt,xdot4,Cdot4);
         
+        //Getting Rk4 xdot cdot
+        xdot=add4Vectors(xdot1,scaleVector(xdot2,2),scaleVector(xdot3,2),xdot4);
+        xdot=scaleVector(xdot,1/6);
+        Cdot=add4Matrix(Cdot1,scaleMatrix(Cdot2,2),scaleMatrix(Cdot3,2),Cdot4);
+        Cdot=scaleMatrix(Cdot,1/6);
+        
+        DCM=addMatrix(DCM,scaleMatrix(Cdot,dt));
+        x.push_back(addVectors(xn,scaleVector(xdot,dt)));
+        xd.push_back(xdot);
+        t.push_back(current_time+dt);
+        func_calls+=4;
     }
+    
 }
 
 
@@ -187,5 +211,60 @@ vector<vector<double>> multiplyMatrices(vector<vector<double>>& mat1, vector<vec
         }
     }
 
+    return result;
+}
+
+// Function to add two vectors
+vector<double> addVectors( vector<double> a, vector<double> b) {
+    vector<double> result(a.size());
+    for (size_t i = 0; i < a.size(); ++i) {
+        result[i] = a[i] + b[i];
+    }
+    return result;
+}
+
+// Function to multiply a vector by a scalar
+vector<double> scaleVector(vector<double> vec, double scalar) {
+    vector<double> result(vec.size());
+    for (size_t i = 0; i < vec.size(); ++i) {
+        result[i] = vec[i] * scalar;
+    }
+    return result;
+}
+// Function to multiply a vector by a scalar
+vector<vector<double>> scaleMatrix(vector<vector<double>> vec, double scalar) {
+    vector<vector<double>> result;
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+        result[i][j] = vec[i][j] * scalar;
+    }
+    }
+    return result;
+}
+vector<vector<double>> addMatrix(vector<vector<double>> a, vector<vector<double>> b) {
+    vector<vector<double>> result;
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+        result[i][j] = a[i][j] + b[i][j];
+    }
+    }
+    return result;
+}
+
+vector<double> add4Vectors( vector<double> a, vector<double> b, vector<double> c, vector<double> d) {
+    vector<double> result(a.size());
+    for (size_t i = 0; i < a.size(); ++i) {
+        result[i] = a[i] + b[i] + c[i] + d[i];
+    }
+    return result;
+}
+
+vector<vector<double>> add4Matrix(vector<vector<double>> a, vector<vector<double>> b, vector<vector<double>> c, vector<vector<double>> d) {
+    vector<vector<double>> result;
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+        result[i][j] = a[i][j] + b[i][j] + c[i][j] + d[i][j];
+    }
+    }
     return result;
 }
