@@ -13,7 +13,7 @@ vector<vector<double>> scaleMatrix(vector<vector<double>> vec, double scalar);
 vector<vector<double>> addMatrix(vector<vector<double>> a, vector<vector<double>> b);
 vector<double> add4Vectors( vector<double> a, vector<double> b, vector<double> c, vector<double> d);
 vector<vector<double>> add4Matrix(vector<vector<double>> a, vector<vector<double>> b, vector<vector<double>> c, vector<vector<double>> d);
- 
+
 
 
 int main()
