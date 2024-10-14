@@ -19,7 +19,8 @@ vector<vector<double>> add4Matrix(vector<vector<double>> a, vector<vector<double
 int main()
 {
     const double PI=3.1414926;
-    double dt = 0.2; //time step
+    double dt; //time step
+    cin>>dt;
     vector<double> x0 = {0.0, 0.0, 0.0}; // radians
     vector<double> V_body = {60.0 * 6076.0 / 3600.0, 0.0, 0.0}; // Convert knots to ft/sec
     vector<vector<double>> x; // 2D vector to store state over time
